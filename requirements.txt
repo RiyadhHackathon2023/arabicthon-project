@@ -1,0 +1,13 @@
+sqlalchemy 
+psycopg2-binary
+bcrypt
+PyJWT
+click
+fastapi
+uvicorn
+python-dotenv
+python-multipart
+requests
+rq
+alembic
+rq-dashboard
