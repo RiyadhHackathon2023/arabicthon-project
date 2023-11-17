@@ -131,7 +131,19 @@ class WorkerManager(metaclass=SingletonMeta):
                 .first()
             #TODO: Check if state change and emit to front
             if worker:
+                prev_status = worker.worker_status
                 worker.worker_status = WorkerStatusEnum.Pending
+                if prev_status != worker.worker_status:
+                    ## Status change, emit
+                    self.redis_conn.publish(
+                        channel='workers:events',
+                        message=json.dumps({
+                            'worker_id': worker.worker_id,
+                            'prev_status': str(prev_status),
+                            'current_status': WorkerStatusEnum.Pending.value
+                        })
+                    )
+                worker.end_date = datetime.now()
                 session.add(worker)
         try:
             session.commit()
@@ -150,8 +162,21 @@ class WorkerManager(metaclass=SingletonMeta):
                 .filter(WorkerModel.worker_id == wid)\
                 .first()
             #TODO: Check if state change and emit to front
-            worker.worker_status = WorkerStatusEnum.Running
-            session.add(worker)
+            if worker:
+                prev_status = worker.worker_status
+                worker.worker_status = WorkerStatusEnum.Running
+                if prev_status != worker.worker_status:
+                    ## Status change, emit
+                    self.redis_conn.publish(
+                        channel='workers:events',
+                        message=json.dumps({
+                            'worker_id': worker.worker_id,
+                            'prev_status': str(prev_status),
+                            'current_status': WorkerStatusEnum.Running.value
+                        })
+                    )
+                worker.end_date = datetime.now()
+                session.add(worker)
         try:
             session.commit()
         except:
@@ -170,7 +195,18 @@ class WorkerManager(metaclass=SingletonMeta):
                 .first()
             #TODO: Check if state change and emit to front
             if worker:
+                prev_status = worker.worker_status
                 worker.worker_status = WorkerStatusEnum.Failed
+                if prev_status != worker.worker_status:
+                    ## Status change, emit
+                    self.redis_conn.publish(
+                        channel='workers:events',
+                        message=json.dumps({
+                            'worker_id': worker.worker_id,
+                            'prev_status': str(prev_status),
+                            'current_status': WorkerStatusEnum.Failed.value
+                        })
+                    )
                 worker.end_date = datetime.now()
                 session.add(worker)
         try:
@@ -191,7 +227,18 @@ class WorkerManager(metaclass=SingletonMeta):
                 .first()
             #TODO: Check if state change and emit to front
             if worker:
+                prev_status = worker.worker_status
                 worker.worker_status = WorkerStatusEnum.Canceled
+                if prev_status != worker.worker_status:
+                    ## Status change, emit
+                    self.redis_conn.publish(
+                        channel='workers:events',
+                        message=json.dumps({
+                            'worker_id': worker.worker_id,
+                            'prev_status': str(prev_status),
+                            'current_status': WorkerStatusEnum.Canceled.value
+                        })
+                    )
                 worker.end_date = datetime.now()
                 session.add(worker)
         try:

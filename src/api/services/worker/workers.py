@@ -61,7 +61,7 @@ class Worker:
             worker_description=data.description,
             worker_status=self.map_job_status_worker_status(job),
             task=data.task,
-            domain=data.domain
+            domain=data.domain,
         )
         worker_dto = w.tojson()
         session.add(w)
