@@ -11,3 +11,4 @@ requests
 rq
 alembic
 rq-dashboard
+python-multipart

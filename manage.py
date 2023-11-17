@@ -54,13 +54,13 @@ def run():
     p2.start()
 
     ##
-    p3 = multiprocessing.Process(target=run_scheduled_jobs)
-    p3.start()
+    # p3 = multiprocessing.Process(target=run_scheduled_jobs)
+    # p3.start()
 
     ## Wait
     p.join()
     p2.join()
-    p3.join()
+    # p3.join()
 
 
 # @click.command('alembic')

@@ -13,6 +13,10 @@ from .middlewares.auth import AuthMiddleware, verify_authorization_handler, auth
 from .middlewares.contrib.auth import requires
 from .services.responses.service_response import ServiceResponse
 from fastapi import BackgroundTasks
+from ..db.models import SourceTypeEnum
+from .services.sources import *
+from typing import Union
+
 import time
 from contextlib import asynccontextmanager
 import multiprocessing
@@ -125,10 +129,85 @@ async def update_maintainer_request_handler(request: Request, maintainer_id: str
     )
 
 
-#TODO: Implement add source
+@app.post('/source/upload')
+async def add_file_source_handler(
+    request: Request,
+    file: Union[UploadFile, None] = File(...), 
+    source_name =  Form(default="source name"),
+    source_description =  Form(default=""),
+    source_domain =  Form(default=""),
+    ):
+
+    ## Upload file
+    response = await add_file_source(
+            source_name,
+            source_description,
+            SourceTypeEnum.File,
+            source_domain,
+            source_file_content=await file.read()
+        )
+    return make_response(
+            status=response.response_status,
+            message=response.message,
+            data=response.data,
+            code=response.http_code
+        )
+
 @app.post('/source/add')
-async def add_source():
-    pass
+async def add_non_file_source_handler(
+    request: Request,
+    source_name =  Form(default="source name"),
+    source_description =  Form(default=""),
+    source_type = Form(default=SourceTypeEnum.Url),
+    source_url =  Form(default=""),
+    source_domain =  Form(default=""),
+    ):
+    if source_type == SourceTypeEnum.File:
+        return make_response(
+            status='error',
+            message='Source type not allowed',
+            data=None,
+            code=400
+        )
+    response = await add_non_file_source(
+            source_name,
+            source_description,
+            source_type,
+            source_url,
+            source_domain,
+        )
+    return make_response(
+            status=response.response_status,
+            message=response.message,
+            data=response.data,
+            code=response.http_code
+        )
+
+
+@app.get('/sources')
+async def get_sources_handler(
+    request: Request, 
+    source_type: Union[SourceTypeEnum, None] = None):
+    if source_type:
+        response = await get_sources_by_type(source_type)
+        return make_response(
+            status=response.response_status,
+            message=response.message,
+            data=response.data,
+            code=response.http_code
+        )
+    response = await get_sources()
+    return make_response(
+            status=response.response_status,
+            message=response.message,
+            data=response.data,
+            code=response.http_code
+    )
+
+
+# @app.get('/source/{source_id}')
+# async def get_source():
+#     pass
 
 
 @app.post('/worker/create')

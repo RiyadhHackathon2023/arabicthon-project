@@ -39,6 +39,14 @@ class WorkerModel(base_provider.Base):
         DateTime(),
     )
 
+    domain = Column(
+        String(255)
+    )
+
+    task = Column(
+        String(255)
+    )
+
     def tojson(self):
         return {
             'worker_id': self.worker_id,
@@ -47,4 +55,6 @@ class WorkerModel(base_provider.Base):
             'worker_description': self.worker_description,
             'start_date': self.start_date,
             'end_date': self.end_date,
+            'domain': self.domain,
+            'task': self.task,
         }
