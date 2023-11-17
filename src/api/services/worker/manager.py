@@ -8,7 +8,9 @@ from ...requests.worker import WorkerData
 from datetime import datetime
 import enum
 import json
-
+import os
+from typing import List
+from ..responses.service_response import ServiceResponse
 
 from rq.registry import (
     DeferredJobRegistry,
@@ -47,7 +49,10 @@ class WorkerManager(metaclass=SingletonMeta):
 
     def __init__(self) -> None:
         print('WorkerManager Init')
-        self.redis_conn = Redis()
+        self.redis_conn = Redis(
+            host=os.getenv('REDIS_HOST') or "127.0.0.1",
+            port=os.getenv('REDIS_PORT') or 6379,
+        )
         self.queue = Queue(connection=self.redis_conn)
         self.rq_worker = RqWorker([self.queue], connection=self.redis_conn, name='backend')
         
@@ -248,3 +253,38 @@ class WorkerManager(metaclass=SingletonMeta):
         )
         return canceled_registry.get_job_ids()
     
+    async def get_workers_by_id(self, worker_id: str):
+        session = get_session()
+        worker_db: List[WorkerModel] = session.query(WorkerModel)\
+            .filter(WorkerModel.worker_id == worker_id)\
+            .first()
+        if worker_db:
+            return ServiceResponse(
+                response_status='success',
+                data=worker_db.tojson(),
+                http_code=200,
+                message=''
+            )
+        return ServiceResponse(
+                response_status='error',
+                data=None,
+                http_code=404,
+                message='Worker not found'
+            )
+
+    async def get_workers(self):
+        session = get_session()
+        workers_db: List[WorkerModel] = session.query(WorkerModel).all()
+        if workers_db:
+            return ServiceResponse(
+                response_status='success',
+                data=[worker.tojson() for worker in workers_db],
+                http_code=200,
+                message=''
+            )
+        return ServiceResponse(
+                response_status='success',
+                data=[],
+                http_code=200,
+                message=''
+            )

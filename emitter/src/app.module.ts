@@ -3,20 +3,25 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     EventEmitterModule,
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'REDIS',
-        transport: Transport.REDIS,
-        options: {
-          host: '127.0.0.1',
-          port: 6379,
-          retryAttempts: 99999999999,
-          retryDelay: 3000,
-        },
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.REDIS,
+          options: {
+            host: configService.get('REDIS_HOST'),
+            port: configService.get('REDIS_PORT'),
+            retryAttempts: 99999999999,
+            retryDelay: 3000,
+          },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

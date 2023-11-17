@@ -245,3 +245,25 @@ async def stream_source(source_id: str):
 async def create_worker(request: Request, background_tasks: BackgroundTasks, worker_data: WorkerData):
     background_tasks.add_task(manager.spawn_worker, worker_data) ##
     return "Worker started"
+
+@app.get('/workers')
+@requires([])
+async def get_workers_handler(request: Request,):
+    response = await manager.get_workers()
+    return make_response(
+        status=response.response_status,
+        data=response.data,
+        code=response.http_code,
+        message=response.message,
+    )
+
+@app.get('/workers/{worker_id}')
+@requires([])
+async def get_workers_handler(request: Request, worker_id: str):
+    response = await manager.get_workers_by_id(worker_id)
+    return make_response(
+        status=response.response_status,
+        data=response.data,
+        code=response.http_code,
+        message=response.message,
+    )

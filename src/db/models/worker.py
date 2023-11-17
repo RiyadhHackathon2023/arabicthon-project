@@ -57,8 +57,8 @@ class WorkerModel(base_provider.Base):
             'worker_name': self.worker_name,
             'worker_status': str(self.worker_status),
             'worker_description': self.worker_description,
-            'start_date': self.start_date,
-            'end_date': self.end_date,
+            'start_date': self.start_date.isoformat(),
+            'end_date': self.end_date.isoformat(),
             'domain': self.domain,
             'task': self.task,
         }
