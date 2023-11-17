@@ -1,12 +1,10 @@
 from pydantic import BaseModel, constr
-from typing import Optional, List
+from typing import List
 
 
-class WorkerData(BaseModel):
-    name: str
-    source_ids: List[str]
+class TaskData(BaseModel):
+    id_worker: str
+    domain: str
     input_words: str# comma-separated words
     task: str ## tasks : words, definition, synonyms, antonyms, examples, historical_events, historical_figures. 
-    domain: str
-    description: str
-
+    sources: List[str] ## Change it to List[Source]

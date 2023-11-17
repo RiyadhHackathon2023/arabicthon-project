@@ -10,6 +10,9 @@ class WorkerStatusEnum(enum.Enum):
     Failed = "Failed"
     Canceled = "Canceled"
 
+    def __str__(self):
+        return str(self.value)
+
 
 class WorkerModel(base_provider.Base):
     __tablename__ = 'workers'
@@ -23,7 +26,8 @@ class WorkerModel(base_provider.Base):
     )
 
     worker_status = Column(
-        Enum(WorkerStatusEnum)
+        Enum(WorkerStatusEnum),
+        default=WorkerStatusEnum.Pending
     )
 
     worker_description = Column(
@@ -51,7 +55,7 @@ class WorkerModel(base_provider.Base):
         return {
             'worker_id': self.worker_id,
             'worker_name': self.worker_name,
-            'worker_status': self.worker_status,
+            'worker_status': str(self.worker_status),
             'worker_description': self.worker_description,
             'start_date': self.start_date,
             'end_date': self.end_date,

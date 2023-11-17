@@ -12,3 +12,4 @@ rq
 alembic
 rq-dashboard
 python-multipart
+fastapi-socketio

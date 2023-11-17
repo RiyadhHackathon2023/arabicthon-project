@@ -1,19 +1,21 @@
 import schedule
+import signal
+import sys
 import time
 def interval(every):
-    print('Hi interval')
     def decorator(job_func):
-        print('Hi decorator')
-        from functools import wraps
-        @wraps(job_func)
-        def wrapper():
-            print('Hi wrapper')
-            return schedule.every(every).seconds.do(job_func)
+        def wrapper(instance, *args, **kwargs):
+            return schedule.every(every).seconds.do(job_func, instance)
         return wrapper
     return decorator
 
+def signal_handler(sig, frame):
+    print('\nClearing scheduled jobs')
+    schedule.clear()
+    sys.exit(0)
 
 def run_scheduled_jobs():
+    signal.signal(signal.SIGINT, signal_handler)
     while True:
         schedule.run_pending()
         time.sleep(2)

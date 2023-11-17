@@ -18,17 +18,32 @@ async def stream_source_file(source_id: str):
             message='Source not found',
             http_code=404
         )
-    f_name = source.source_name()
+    f_name = source.source_name
     f_path = f'{f_name}_{source_id}'
     swift = get_swift_connection()
-    header, obj = swift.connection.get_object('documents', f_path)
-    return header, obj
+    try:
+        header, obj = swift.connection.get_object('documents', f_path)
+        return ServiceResponse(
+            response_status='success',
+            data=(header, obj),
+            message='',
+            http_code=200
+        )
+    except:
+        return ServiceResponse(
+            response_status='error',
+            data=None,
+            message='Could not fetch data',
+            http_code=500
+        )
+    finally:
+        swift.connection.close()
 
-async def get_source(source_id: str, source_type: SourceTypeEnum):
+async def get_source(source_id: str):
     # Search for source
     session = get_session()
     source_query = session.query(SourceModel)
-    source: Union[SourceModel, None] = source_query.filter(SourceModel.source_id == source_id & SourceModel.source_type == source_type).first()
+    source: Union[SourceModel, None] = source_query.filter(SourceModel.source_id == source_id).first()
     if not source:
         return ServiceResponse(
             response_status='error',

@@ -16,7 +16,6 @@ url = URL.create(
 
 def get_engine():
     engine = create_engine(url)
-    print(engine)
     return engine
 
 def get_session():

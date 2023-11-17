@@ -2,7 +2,7 @@ import os
 import dotenv
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.requests import Request
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .requests.maintainer import CreateMaintainerRequest, UpdateMaintainerRequest
 from .requests.source import LoginRequest
@@ -16,6 +16,7 @@ from fastapi import BackgroundTasks
 from ..db.models import SourceTypeEnum
 from .services.sources import *
 from typing import Union
+from .requests.worker import WorkerData
 
 import time
 from contextlib import asynccontextmanager
@@ -29,6 +30,7 @@ app = FastAPI(
     debug=os.getenv("DEBUG"),
     # lifespan=lifespan,
 )
+
 
 
 origins = ['*']
@@ -205,13 +207,41 @@ async def get_sources_handler(
     )
 
 
-# @app.get('/source/{source_id}')
-# async def get_source():
-#     pass
+@app.get('/source/{source_id}')
+async def get_source_handler(source_id: str):
+    response = await get_source(source_id)
+    return make_response(
+            status=response.response_status,
+            message=response.message,
+            data=response.data,
+            code=response.http_code
+    )
+
+@app.get('/source/{source_id}/stream')
+async def stream_source(source_id: str):
+    response = await stream_source_file(source_id)
+    if not response:
+        return make_response(
+            status=response.response_status,
+            message=response.message,
+            data=response.data,
+            code=response.http_code
+    )
+    headers, contents = response.data
+    content_type = headers.get('content-type', 'application/octet-stream')
+    
+    # Create an HTTP response with the object contents and content type
+    print(headers)
+    response = Response(
+            contents,
+            headers={'Content-Type': content_type},
+            status_code=200
+        )
+    return response
 
 
 @app.post('/worker/create')
 @requires([])
-async def create_worker(request: Request, background_tasks: BackgroundTasks):
-    background_tasks.add_task(manager.spawn_worker, "data") ##
+async def create_worker(request: Request, background_tasks: BackgroundTasks, worker_data: WorkerData):
+    background_tasks.add_task(manager.spawn_worker, worker_data) ##
     return "Worker started"
