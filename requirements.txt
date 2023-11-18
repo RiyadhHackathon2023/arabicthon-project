@@ -15,3 +15,7 @@ python-multipart
 fastapi-socketio
 schedule
 python-swiftclient
+neo4j
+cohere
+langchain
+playwright

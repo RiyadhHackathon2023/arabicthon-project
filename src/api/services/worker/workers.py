@@ -47,6 +47,7 @@ class Worker:
         self.job = self.queue.enqueue_call(
             run_agent,
             args=[task_data],
+            timeout=2 * 3600,  # 2h max
         )
 
         w = self.commit_new_worker(self.job, self.data)

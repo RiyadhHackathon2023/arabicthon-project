@@ -4,13 +4,18 @@ from .workers import Worker
 from ....db.models import WorkerModel, WorkerStatusEnum
 from ....db.session import get_session
 from ..utils.schedule import interval
-from ...requests.worker import WorkerData
+from ...requests.worker import WorkerData, RelationUpdateRequest
 from datetime import datetime
 import enum
 import json
 import os
 from typing import List
 from ..responses.service_response import ServiceResponse
+from src.neo4j_db.neo4j_connection import get_neo4j_connection
+from .types import WorkerTaskEnum
+import logging
+
+logger = logging.getLogger(__name__)
 
 from rq.registry import (
     DeferredJobRegistry,
@@ -104,6 +109,9 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Completed
                 if prev_status != worker.worker_status:
                     ## Status change, emit
+                    logger.debug(
+                        f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Completed.value}'
+                    )
                     self.redis_conn.publish(
                         channel='workers:events',
                         message=json.dumps({
@@ -138,6 +146,9 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Pending
                 if prev_status != worker.worker_status:
                     ## Status change, emit
+                    logger.debug(
+                        f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Pending.value}'
+                    )
                     self.redis_conn.publish(channel='workers:events',
                                             message=json.dumps({
                                                 'worker_id':
@@ -171,6 +182,9 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Running
                 if prev_status != worker.worker_status:
                     ## Status change, emit
+                    logger.debug(
+                        f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Running.value}'
+                    )
                     self.redis_conn.publish(channel='workers:events',
                                             message=json.dumps({
                                                 'worker_id':
@@ -204,6 +218,9 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Failed
                 if prev_status != worker.worker_status:
                     ## Status change, emit
+                    logger.debug(
+                        f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Failed.value}'
+                    )
                     self.redis_conn.publish(channel='workers:events',
                                             message=json.dumps({
                                                 'worker_id':
@@ -236,6 +253,9 @@ class WorkerManager(metaclass=SingletonMeta):
                 prev_status = worker.worker_status
                 worker.worker_status = WorkerStatusEnum.Canceled
                 if prev_status != worker.worker_status:
+                    logger.debug(
+                        f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Canceled.value}'
+                    )
                     ## Status change, emit
                     self.redis_conn.publish(channel='workers:events',
                                             message=json.dumps({
@@ -299,14 +319,24 @@ class WorkerManager(metaclass=SingletonMeta):
             serializer=self.queue.serializer)
         return canceled_registry.get_job_ids()
 
+    ### API related services
     async def get_workers_by_id(self, worker_id: str):
         session = get_session()
         worker_db: List[WorkerModel] = session.query(WorkerModel)\
             .filter(WorkerModel.worker_id == worker_id)\
             .first()
         if worker_db:
+            ## Fetch neo4j connection
+            conn = get_neo4j_connection()
+            outputs = None
+            if worker_db.task == str(WorkerTaskEnum.Definition):
+                outputs = conn.get_definitions(worker_id=worker_db.worker_id)
+
+            result = worker_db.tojson()
+            result['outputs'] = outputs
+
             return ServiceResponse(response_status='success',
-                                   data=worker_db.tojson(),
+                                   data=result,
                                    http_code=200,
                                    message='')
         return ServiceResponse(response_status='error',
@@ -327,3 +357,14 @@ class WorkerManager(metaclass=SingletonMeta):
                                data=[],
                                http_code=200,
                                message='')
+
+    async def update_relation_output(self, update_data: RelationUpdateRequest):
+        conn = get_neo4j_connection()
+        result = conn.change_has_output_status(
+            has_output_id=update_data.id_relation,
+            new_status=update_data.status)
+        return ServiceResponse(
+            response_status='success' if result else 'error',
+            data='',
+            message='Updated' if result else 'Error occured',
+            http_code=200 if result else 500)
