@@ -241,10 +241,12 @@ async def stream_source(source_id: str):
 
 
 @app.post('/worker/create')
-@requires([])
+# @requires([])
 async def create_worker(request: Request, background_tasks: BackgroundTasks, worker_data: WorkerData):
     background_tasks.add_task(manager.spawn_worker, worker_data) ##
-    return "Worker started"
+    return Response(
+        content="Worker started",
+    )
 
 @app.get('/workers')
 @requires([])

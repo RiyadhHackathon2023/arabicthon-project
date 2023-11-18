@@ -50,7 +50,7 @@ def run():
     p.start()
 
     ## Start fast api server
-    p2 = multiprocessing.Process(target=uvicorn.run, args=(app,), kwargs={"host": "127.0.0.1","port": 8000})
+    p2 = multiprocessing.Process(target=uvicorn.run, args=(app,), kwargs={"host": "127.0.0.1","port": 3000})
     p2.start()
 
     ##
