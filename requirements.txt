@@ -13,3 +13,5 @@ alembic
 rq-dashboard
 python-multipart
 fastapi-socketio
+schedule
+python-swiftclient

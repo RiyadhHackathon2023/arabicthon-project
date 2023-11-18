@@ -21,6 +21,7 @@ from rq.registry import (
     ScheduledJobRegistry,
 )
 
+
 class SingletonMeta(type):
     """
     The Singleton class can be implemented in different ways in Python. Some
@@ -40,12 +41,13 @@ class SingletonMeta(type):
             cls._instances[cls] = instance
         return cls._instances[cls]
 
+
 class WorkerManagerStatus(enum.Enum):
     Running = "Running"
     Stopped = "Stopped"
 
-class WorkerManager(metaclass=SingletonMeta):
 
+class WorkerManager(metaclass=SingletonMeta):
 
     def __init__(self) -> None:
         print('WorkerManager Init')
@@ -54,8 +56,10 @@ class WorkerManager(metaclass=SingletonMeta):
             port=os.getenv('REDIS_PORT') or 6379,
         )
         self.queue = Queue(connection=self.redis_conn)
-        self.rq_worker = RqWorker([self.queue], connection=self.redis_conn, name='backend')
-        
+        self.rq_worker = RqWorker([self.queue],
+                                  connection=self.redis_conn,
+                                  name='backend')
+
         self.rq_worker_status = WorkerManagerStatus.Stopped
         self.update_jobs_status()
 
@@ -64,7 +68,7 @@ class WorkerManager(metaclass=SingletonMeta):
         if self.rq_worker_status != WorkerManagerStatus.Running:
             self.rq_worker.work()
             self.rq_worker_status = WorkerManagerStatus.Running
-        
+
     async def spawn_worker(self, data: WorkerData):
         ## Prepare worker data
         print('Spawning new worker')
@@ -73,11 +77,9 @@ class WorkerManager(metaclass=SingletonMeta):
         ## Run
         await w.run()
 
-
-    
     @interval(every=5)
     def update_jobs_status(self):
-        print("Update Jobs Status")
+        # print("Update Jobs Status")
         # if self.queue.is_empty():
         #     print('Queue is empty, no updates')
         #     return
@@ -86,7 +88,6 @@ class WorkerManager(metaclass=SingletonMeta):
         self.update_completed_workers()
         self.update_failed_workers()
         self.update_canceled_workers()
-
 
     def update_completed_workers(self):
         completed_workers_ids = self.get_completed_workers()
@@ -106,11 +107,13 @@ class WorkerManager(metaclass=SingletonMeta):
                     self.redis_conn.publish(
                         channel='workers:events',
                         message=json.dumps({
-                            'worker_id': worker.worker_id,
-                            'prev_status': str(prev_status),
-                            'current_status': WorkerStatusEnum.Completed.value
-                        })
-                    )
+                            'worker_id':
+                            worker.worker_id,
+                            'prev_status':
+                            str(prev_status),
+                            'current_status':
+                            WorkerStatusEnum.Completed.value
+                        }))
                 worker.end_date = datetime.now()
                 session.add(worker)
         try:
@@ -135,14 +138,15 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Pending
                 if prev_status != worker.worker_status:
                     ## Status change, emit
-                    self.redis_conn.publish(
-                        channel='workers:events',
-                        message=json.dumps({
-                            'worker_id': worker.worker_id,
-                            'prev_status': str(prev_status),
-                            'current_status': WorkerStatusEnum.Pending.value
-                        })
-                    )
+                    self.redis_conn.publish(channel='workers:events',
+                                            message=json.dumps({
+                                                'worker_id':
+                                                worker.worker_id,
+                                                'prev_status':
+                                                str(prev_status),
+                                                'current_status':
+                                                WorkerStatusEnum.Pending.value
+                                            }))
                 worker.end_date = datetime.now()
                 session.add(worker)
         try:
@@ -167,14 +171,15 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Running
                 if prev_status != worker.worker_status:
                     ## Status change, emit
-                    self.redis_conn.publish(
-                        channel='workers:events',
-                        message=json.dumps({
-                            'worker_id': worker.worker_id,
-                            'prev_status': str(prev_status),
-                            'current_status': WorkerStatusEnum.Running.value
-                        })
-                    )
+                    self.redis_conn.publish(channel='workers:events',
+                                            message=json.dumps({
+                                                'worker_id':
+                                                worker.worker_id,
+                                                'prev_status':
+                                                str(prev_status),
+                                                'current_status':
+                                                WorkerStatusEnum.Running.value
+                                            }))
                 worker.end_date = datetime.now()
                 session.add(worker)
         try:
@@ -199,14 +204,15 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Failed
                 if prev_status != worker.worker_status:
                     ## Status change, emit
-                    self.redis_conn.publish(
-                        channel='workers:events',
-                        message=json.dumps({
-                            'worker_id': worker.worker_id,
-                            'prev_status': str(prev_status),
-                            'current_status': WorkerStatusEnum.Failed.value
-                        })
-                    )
+                    self.redis_conn.publish(channel='workers:events',
+                                            message=json.dumps({
+                                                'worker_id':
+                                                worker.worker_id,
+                                                'prev_status':
+                                                str(prev_status),
+                                                'current_status':
+                                                WorkerStatusEnum.Failed.value
+                                            }))
                 worker.end_date = datetime.now()
                 session.add(worker)
         try:
@@ -231,14 +237,15 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Canceled
                 if prev_status != worker.worker_status:
                     ## Status change, emit
-                    self.redis_conn.publish(
-                        channel='workers:events',
-                        message=json.dumps({
-                            'worker_id': worker.worker_id,
-                            'prev_status': str(prev_status),
-                            'current_status': WorkerStatusEnum.Canceled.value
-                        })
-                    )
+                    self.redis_conn.publish(channel='workers:events',
+                                            message=json.dumps({
+                                                'worker_id':
+                                                worker.worker_id,
+                                                'prev_status':
+                                                str(prev_status),
+                                                'current_status':
+                                                WorkerStatusEnum.Canceled.value
+                                            }))
                 worker.end_date = datetime.now()
                 session.add(worker)
         try:
@@ -248,76 +255,64 @@ class WorkerManager(metaclass=SingletonMeta):
         finally:
             session.close()
 
-
     def get_completed_workers(self) -> list[str]:
-        registry = FinishedJobRegistry(
-            name=self.queue.name, 
-            connection=self.queue.connection, 
-            job_class=self.queue.job_class, 
-            serializer=self.queue.serializer
-        )
+        registry = FinishedJobRegistry(name=self.queue.name,
+                                       connection=self.queue.connection,
+                                       job_class=self.queue.job_class,
+                                       serializer=self.queue.serializer)
         return registry.get_job_ids()
-        
+
     def get_pending_workers(self) -> list[str]:
         deferred_registry = DeferredJobRegistry(
-            name=self.queue.name, 
-            connection=self.queue.connection, 
-            job_class=self.queue.job_class, 
-            serializer=self.queue.serializer
-        )
+            name=self.queue.name,
+            connection=self.queue.connection,
+            job_class=self.queue.job_class,
+            serializer=self.queue.serializer)
         scheduled_registry = ScheduledJobRegistry(
-            name=self.queue.name, 
-            connection=self.queue.connection, 
-            job_class=self.queue.job_class, 
-            serializer=self.queue.serializer
-        )
-        return deferred_registry.get_job_ids() + scheduled_registry.get_job_ids()
+            name=self.queue.name,
+            connection=self.queue.connection,
+            job_class=self.queue.job_class,
+            serializer=self.queue.serializer)
+        return deferred_registry.get_job_ids(
+        ) + scheduled_registry.get_job_ids()
 
     def get_running_workers(self) -> list[str]:
         stareted_registry = StartedJobRegistry(
-            name=self.queue.name, 
-            connection=self.queue.connection, 
-            job_class=self.queue.job_class, 
-            serializer=self.queue.serializer
-        )
+            name=self.queue.name,
+            connection=self.queue.connection,
+            job_class=self.queue.job_class,
+            serializer=self.queue.serializer)
         return stareted_registry.get_job_ids()
 
     def get_failed_workers(self) -> list[str]:
-        failed_registry = FailedJobRegistry(
-            name=self.queue.name, 
-            connection=self.queue.connection, 
-            job_class=self.queue.job_class, 
-            serializer=self.queue.serializer
-        )
+        failed_registry = FailedJobRegistry(name=self.queue.name,
+                                            connection=self.queue.connection,
+                                            job_class=self.queue.job_class,
+                                            serializer=self.queue.serializer)
         return failed_registry.get_job_ids()
 
     def get_canceled_workers(self) -> list[str]:
         canceled_registry = CanceledJobRegistry(
-            name=self.queue.name, 
-            connection=self.queue.connection, 
-            job_class=self.queue.job_class, 
-            serializer=self.queue.serializer
-        )
+            name=self.queue.name,
+            connection=self.queue.connection,
+            job_class=self.queue.job_class,
+            serializer=self.queue.serializer)
         return canceled_registry.get_job_ids()
-    
+
     async def get_workers_by_id(self, worker_id: str):
         session = get_session()
         worker_db: List[WorkerModel] = session.query(WorkerModel)\
             .filter(WorkerModel.worker_id == worker_id)\
             .first()
         if worker_db:
-            return ServiceResponse(
-                response_status='success',
-                data=worker_db.tojson(),
-                http_code=200,
-                message=''
-            )
-        return ServiceResponse(
-                response_status='error',
-                data=None,
-                http_code=404,
-                message='Worker not found'
-            )
+            return ServiceResponse(response_status='success',
+                                   data=worker_db.tojson(),
+                                   http_code=200,
+                                   message='')
+        return ServiceResponse(response_status='error',
+                               data=None,
+                               http_code=404,
+                               message='Worker not found')
 
     async def get_workers(self):
         session = get_session()
@@ -327,11 +322,8 @@ class WorkerManager(metaclass=SingletonMeta):
                 response_status='success',
                 data=[worker.tojson() for worker in workers_db],
                 http_code=200,
-                message=''
-            )
-        return ServiceResponse(
-                response_status='success',
-                data=[],
-                http_code=200,
-                message=''
-            )
+                message='')
+        return ServiceResponse(response_status='success',
+                               data=[],
+                               http_code=200,
+                               message='')

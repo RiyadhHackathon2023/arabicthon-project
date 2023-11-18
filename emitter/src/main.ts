@@ -20,6 +20,6 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices();
-  await app.listen(PORT || 3001);
+  await app.listen(PORT || 3001, '0.0.0.0');
 }
 bootstrap();
