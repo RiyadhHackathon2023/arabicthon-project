@@ -63,7 +63,7 @@ class WorkerManager(metaclass=SingletonMeta):
         self.queue = Queue(connection=self.redis_conn)
         self.rq_worker = RqWorker([self.queue],
                                   connection=self.redis_conn,
-                                  name='backend')
+                                  name='backend2')
 
         self.rq_worker_status = WorkerManagerStatus.Stopped
         self.update_jobs_status()
@@ -109,7 +109,7 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Completed
                 if prev_status != worker.worker_status:
                     ## Status change, emit
-                    logger.debug(
+                    print(
                         f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Completed.value}'
                     )
                     self.redis_conn.publish(
@@ -146,7 +146,7 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Pending
                 if prev_status != worker.worker_status:
                     ## Status change, emit
-                    logger.debug(
+                    print(
                         f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Pending.value}'
                     )
                     self.redis_conn.publish(channel='workers:events',
@@ -182,7 +182,7 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Running
                 if prev_status != worker.worker_status:
                     ## Status change, emit
-                    logger.debug(
+                    print(
                         f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Running.value}'
                     )
                     self.redis_conn.publish(channel='workers:events',
@@ -218,7 +218,7 @@ class WorkerManager(metaclass=SingletonMeta):
                 worker.worker_status = WorkerStatusEnum.Failed
                 if prev_status != worker.worker_status:
                     ## Status change, emit
-                    logger.debug(
+                    print(
                         f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Failed.value}'
                     )
                     self.redis_conn.publish(channel='workers:events',
@@ -253,7 +253,7 @@ class WorkerManager(metaclass=SingletonMeta):
                 prev_status = worker.worker_status
                 worker.worker_status = WorkerStatusEnum.Canceled
                 if prev_status != worker.worker_status:
-                    logger.debug(
+                    print(
                         f'Worker {wid} changed status from {str(prev_status)} to {WorkerStatusEnum.Canceled.value}'
                     )
                     ## Status change, emit
@@ -322,18 +322,21 @@ class WorkerManager(metaclass=SingletonMeta):
     ### API related services
     async def get_workers_by_id(self, worker_id: str):
         session = get_session()
-        worker_db: List[WorkerModel] = session.query(WorkerModel)\
+        worker_db: List[WorkerModel] = session.query(WorkerModel).order_by(WorkerModel.start_date.desc())\
             .filter(WorkerModel.worker_id == worker_id)\
             .first()
         if worker_db:
             ## Fetch neo4j connection
             conn = get_neo4j_connection()
             outputs = None
+            rate = 0
             if worker_db.task == str(WorkerTaskEnum.Definition):
-                outputs = conn.get_definitions(worker_id=worker_db.worker_id)
+                outputs, rate = conn.get_definitions(
+                    worker_id=worker_db.worker_id)
 
             result = worker_db.tojson()
             result['outputs'] = outputs
+            result['completion'] = rate
 
             return ServiceResponse(response_status='success',
                                    data=result,
@@ -346,13 +349,29 @@ class WorkerManager(metaclass=SingletonMeta):
 
     async def get_workers(self):
         session = get_session()
-        workers_db: List[WorkerModel] = session.query(WorkerModel).all()
+        workers_db: List[WorkerModel] = session.query(WorkerModel).order_by(
+            WorkerModel.start_date.desc()).all()
         if workers_db:
-            return ServiceResponse(
-                response_status='success',
-                data=[worker.tojson() for worker in workers_db],
-                http_code=200,
-                message='')
+            conn = get_neo4j_connection()
+
+            data = []
+            for worker_db in workers_db:
+                outputs = None
+                rate = 0
+                if worker_db.task == str(WorkerTaskEnum.Definition):
+                    outputs, rate = conn.get_definitions(
+                        worker_id=worker_db.worker_id)
+
+                result = worker_db.tojson()
+                result['outputs'] = outputs
+                result['completion'] = rate
+                data.append(result)
+            session.close()
+            return ServiceResponse(response_status='success',
+                                   data=data,
+                                   http_code=200,
+                                   message='')
+        session.close()
         return ServiceResponse(response_status='success',
                                data=[],
                                http_code=200,

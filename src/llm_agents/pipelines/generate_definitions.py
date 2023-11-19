@@ -13,6 +13,7 @@ def generate_definitions(worker_id="",
                          }],
                          words=[]):
     for source in sources:
+        print(source["type"])
         if source["type"] == "Url":
             input_paragraphs = get_paragraphs(source["content"])
         elif source["type"] == "Wikipedia":
@@ -27,13 +28,17 @@ def generate_definitions(worker_id="",
             uri='neo4j+s://5e2c94ef.databases.neo4j.io',
             user='neo4j',
             pwd='E53hCDHJjVnO8aTLMejfxtmz1G7q9LplVVO6K5L6drg')
-
+        print('Scraping...')
         for paragraph in input_paragraphs:
+            print("\nPARAGRAPH", paragraph)
             for word in words:
                 if word in paragraph:
+                    print("\nWORD", word)
                     paragraph = paragraph.replace('\'', '')
                     paragraph = paragraph.replace('\"', '')
+                    print("REPLACED", paragraph)
                     if classify_definition(paragraph):
+                        print("\nDEF FOUND")
                         extracted_text = extractor.extract(paragraph, word)
                         conn.add_definition(worker_id, word, extracted_text,
                                             domain)

@@ -1,5 +1,5 @@
 import { Controller, Sse } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, debounceTime } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
@@ -28,6 +28,8 @@ export class AppController {
 
   @Sse('workers/events')
   eventStreamer(): Observable<MessageEvent> {
-    return this.eventStream;
+    return this.eventStream.pipe(
+      debounceTime(1000)
+    );
   }
 }

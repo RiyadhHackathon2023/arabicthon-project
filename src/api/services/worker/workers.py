@@ -48,6 +48,7 @@ class Worker:
             run_agent,
             args=[task_data],
             timeout=2 * 3600,  # 2h max
+            job_id=self.job_id,
         )
 
         w = self.commit_new_worker(self.job, self.data)
@@ -75,6 +76,7 @@ class Worker:
         worker_dto = w.tojson()
         session.add(w)
         session.commit()
+        session.close()
         return worker_dto
 
     def map_job_status_worker_status(self, status: JobStatus):
