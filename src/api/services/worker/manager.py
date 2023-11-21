@@ -1,7 +1,7 @@
 from redis import Redis
 from rq import Queue, Worker as RqWorker
 from .workers import Worker
-from ....db.models import WorkerModel, WorkerStatusEnum
+from ....db.models import WorkerModel, WorkerStatusEnum, WorkerSourceModel
 from ....db.session import get_session
 from ..utils.schedule import interval
 from ...requests.worker import WorkerData, RelationUpdateRequest
@@ -324,6 +324,7 @@ class WorkerManager(metaclass=SingletonMeta):
         worker_db: List[WorkerModel] = session.query(WorkerModel).order_by(WorkerModel.start_date.desc())\
             .filter(WorkerModel.worker_id == worker_id)\
             .first()
+        wsources_db: List[WorkerSourceModel] = session.query(WorkerSourceModel).filter(WorkerSourceModel.worker_id == worker_id).all()
         if worker_db:
             ## Fetch neo4j connection
             conn = get_neo4j_connection()
@@ -336,6 +337,9 @@ class WorkerManager(metaclass=SingletonMeta):
             result = worker_db.tojson()
             result['outputs'] = outputs
             result['completion'] = rate
+            result["source_ids"] = []
+            if wsources_db:
+                result["source_ids"] = [ws_db.source_id for ws_db in wsources_db]
 
             return ServiceResponse(response_status='success',
                                    data=result,
@@ -360,10 +364,15 @@ class WorkerManager(metaclass=SingletonMeta):
                 if worker_db.task == str(WorkerTaskEnum.Definition):
                     outputs, rate = conn.get_definitions(
                         worker_id=worker_db.worker_id)
+                
 
                 result = worker_db.tojson()
                 result['outputs'] = outputs
                 result['completion'] = rate
+                result["source_ids"] = []
+                wsources_db: List[WorkerSourceModel] = session.query(WorkerSourceModel).filter(WorkerSourceModel.worker_id == worker_db.worker_id).all()
+                if wsources_db:
+                    result["source_ids"] = [ws_db.source_id for ws_db in wsources_db]
                 data.append(result)
             session.close()
             return ServiceResponse(response_status='success',

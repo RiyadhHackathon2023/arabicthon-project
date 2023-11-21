@@ -4,7 +4,7 @@ from rq import Queue, Worker as RqWorker
 from rq.job import Job
 from redis import Redis
 from ...requests.worker import WorkerData
-from ....db.models import WorkerModel, WorkerStatusEnum, SourceModel, SourceTypeEnum
+from ....db.models import WorkerModel, WorkerStatusEnum, SourceModel, SourceTypeEnum, WorkerSourceModel
 from ....db.session import get_session
 from rq.job import Job, JobStatus
 import json
@@ -73,8 +73,16 @@ class Worker:
             task=data.task,
             domain=data.domain,
         )
+        ## Create worker sources
         worker_dto = w.tojson()
         session.add(w)
+        for source_id in data.source_ids:
+            ws = WorkerSourceModel(
+                worker_id=job.get_id(),
+                source_id=source_id
+            )
+            session.add(ws)
+
         session.commit()
         session.close()
         return worker_dto
