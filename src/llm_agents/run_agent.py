@@ -14,4 +14,5 @@ def run_agent(data: TaskData):
     #     domain=data.domain,
     #     words=data.input_words.split(sep=','),
     # )
-    return "OK"
+    time.sleep(5)
+    return data

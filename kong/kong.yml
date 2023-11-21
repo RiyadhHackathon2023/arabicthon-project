@@ -2,7 +2,7 @@ _format_version: "2.1"
 _transform: true
 
 services:
-  - host: 127.0.0.1
+  - host: 172.17.0.1
     protocol: http
     port: 3000
     name: backend
@@ -25,7 +25,7 @@ services:
         request_buffering: true
         response_buffering: true
         preserve_host: false
-  - host: 127.0.0.1
+  - host: 172.17.0.1
     protocol: http
     port: 3001
     name: emitter
