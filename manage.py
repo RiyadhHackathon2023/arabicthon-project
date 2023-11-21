@@ -10,9 +10,11 @@ from src.api.services.utils.schedule import run_scheduled_jobs
 # This is the initial version of database management
 # Without managing migrations
 
+
 @click.group()
 def manager_cli():
     pass
+
 
 @click.command('createdb')
 def create_db():
@@ -22,9 +24,7 @@ def create_db():
     retry_count = 0
     while retry_count < max_retries:
         try:
-            models.base_provider.Base.metadata.create_all(
-                get_engine()
-            )
+            models.base_provider.Base.metadata.create_all(get_engine())
             return
         except Exception:
             print("Could not establish connection to db")
@@ -38,9 +38,8 @@ def create_db():
 def drop_db():
     from src.db import models
     from src.db import get_engine
-    models.base_provider.Base.metadata.drop_all(
-        get_engine()
-    )
+    models.base_provider.Base.metadata.drop_all(get_engine())
+
 
 @click.command('run')
 def run():
@@ -50,7 +49,17 @@ def run():
     p.start()
 
     ## Start fast api server
-    p2 = multiprocessing.Process(target=uvicorn.run, args=(app,), kwargs={"host": "0.0.0.0","port": 3000})
+    p2 = multiprocessing.Process(
+        target=uvicorn.run,
+        args=(app, ),
+        kwargs={
+            "host": "0.0.0.0",
+            "port": 3000,
+            # "ssl_keyfile": "/home/azureuser/backend/key.pem",
+            # "ssl_certfile": "/home/azureuser/backend/cert.pem",
+            # "ssl_keyfile_password": ""
+
+        })
     p2.start()
 
     ##
@@ -82,5 +91,3 @@ if __name__ == '__main__':
             sys.argv = sys.argv[1:]
             sys.exit(main())
     manager_cli()
-
-    

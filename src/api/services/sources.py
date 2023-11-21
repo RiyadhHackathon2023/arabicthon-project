@@ -57,6 +57,38 @@ async def get_source(source_id: str):
                            http_code=200)
 
 
+async def del_source(source_id: str):
+    # Search for source
+    session = get_session()
+    source_query = session.query(SourceModel)
+    source: Union[SourceModel, None] = source_query.filter(
+        SourceModel.source_id == source_id).first()
+    if not source:
+        session.close()
+
+        return ServiceResponse(response_status='error',
+                               data=None,
+                               message='Source not found',
+                               http_code=404)
+    try:
+        session.delete(source)
+        session.commit()
+        return ServiceResponse(response_status='success',
+                           data=None,
+                           message=f'Source {source_id} deleted',
+                           http_code=200)
+    except:
+        return ServiceResponse(response_status='error',
+                           data=None,
+                           message='Server error',
+                           http_code=500)
+
+    finally:
+        session.close()
+
+    
+
+
 async def get_sources_by_type(source_type: SourceTypeEnum):
     # Search for source
     session = get_session()

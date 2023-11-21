@@ -1,0 +1,50 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+  - host: 127.0.0.1
+    protocol: http
+    port: 3000
+    name: backend
+    read_timeout: 60000
+    retries: 5
+    write_timeout: 60000
+    enabled: true
+    connect_timeout: 60000
+    routes:
+      - https_redirect_status_code: 426
+        name: backend
+        regex_priority: 0
+        paths:
+          - /backend
+        protocols:
+          - http
+          - https
+        strip_path: true
+        path_handling: v1
+        request_buffering: true
+        response_buffering: true
+        preserve_host: false
+  - host: 127.0.0.1
+    protocol: http
+    port: 3001
+    name: emitter
+    read_timeout: 60000
+    retries: 5
+    write_timeout: 60000
+    enabled: true
+    connect_timeout: 60000
+    routes:
+      - https_redirect_status_code: 426
+        name: emitter
+        regex_priority: 0
+        paths:
+          - /emitter
+        protocols:
+          - http
+          - https
+        strip_path: true
+        path_handling: v1
+        request_buffering: true
+        response_buffering: true
+        preserve_host: false

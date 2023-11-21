@@ -193,6 +193,14 @@ async def get_source_handler(source_id: str):
                          data=response.data,
                          code=response.http_code)
 
+@app.delete('/source/{source_id}')
+async def del_source_handler(source_id: str):
+    response = await del_source(source_id)
+    return make_response(status=response.response_status,
+                         message=response.message,
+                         data=response.data,
+                         code=response.http_code)
+
 
 @app.get('/source/{source_id}/stream')
 async def stream_source(source_id: str):

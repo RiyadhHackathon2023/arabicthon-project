@@ -14,6 +14,7 @@ from ..responses.service_response import ServiceResponse
 from src.neo4j_db.neo4j_connection import get_neo4j_connection
 from .types import WorkerTaskEnum
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class WorkerManager(metaclass=SingletonMeta):
         self.queue = Queue(connection=self.redis_conn)
         self.rq_worker = RqWorker([self.queue],
                                   connection=self.redis_conn,
-                                  name='backend2')
+                                  name=f'backend:{uuid.uuid1().hex[:10]}')
 
         self.rq_worker_status = WorkerManagerStatus.Stopped
         self.update_jobs_status()
@@ -122,8 +123,8 @@ class WorkerManager(metaclass=SingletonMeta):
                             'current_status':
                             WorkerStatusEnum.Completed.value
                         }))
-                worker.end_date = datetime.now()
-                session.add(worker)
+                    worker.end_date = datetime.now()
+                    session.add(worker)
         try:
             session.commit()
         except:
@@ -158,8 +159,7 @@ class WorkerManager(metaclass=SingletonMeta):
                                                 'current_status':
                                                 WorkerStatusEnum.Pending.value
                                             }))
-                worker.end_date = datetime.now()
-                session.add(worker)
+                    session.add(worker)
         try:
             session.commit()
         except:
@@ -194,8 +194,7 @@ class WorkerManager(metaclass=SingletonMeta):
                                                 'current_status':
                                                 WorkerStatusEnum.Running.value
                                             }))
-                worker.end_date = datetime.now()
-                session.add(worker)
+                    session.add(worker)
         try:
             session.commit()
         except:
@@ -230,8 +229,8 @@ class WorkerManager(metaclass=SingletonMeta):
                                                 'current_status':
                                                 WorkerStatusEnum.Failed.value
                                             }))
-                worker.end_date = datetime.now()
-                session.add(worker)
+                    worker.end_date = datetime.now()
+                    session.add(worker)
         try:
             session.commit()
         except:
@@ -266,8 +265,8 @@ class WorkerManager(metaclass=SingletonMeta):
                                                 'current_status':
                                                 WorkerStatusEnum.Canceled.value
                                             }))
-                worker.end_date = datetime.now()
-                session.add(worker)
+                    worker.end_date = datetime.now()
+                    session.add(worker)
         try:
             session.commit()
         except:

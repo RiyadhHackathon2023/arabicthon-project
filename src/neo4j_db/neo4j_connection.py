@@ -74,6 +74,8 @@ class Neo4jConnection:
         """
         # get_definitions_query = f"MATCH (word:Word)<-[:HAS_INPUT]-(w:Worker {{id: '{worker_id}'}})-[r:HAS_OUTPUT]->(d:Definition) RETURN w.id AS worker, word.content AS word, d.content AS definition, r.status AS status, r.id as rid"
         results = self.query(get_definitions_query)
+        if not results:
+            return [], self.completion_rate([])
         output = [{
             "word": row['word'],
             "definition": row['definition'],
