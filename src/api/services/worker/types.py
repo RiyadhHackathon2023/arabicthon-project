@@ -22,7 +22,8 @@ class WorkerTaskEnum(enum.Enum):
     Antonyms = "antonyms"
     HisEvents = "his_events"
     KeyTerms = "key_terms"
-    
+    Places = "places"
+
 
     def __str__(self):
         return str(self.value)

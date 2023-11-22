@@ -43,13 +43,14 @@ class Worker:
     async def run(self):
         print('Run ...')
         task_data = self.worker_data_to_task_data(self.data)
-        print(len(task_data.sources))
+        print(task_data)
         self.job = self.queue.enqueue_call(
             run_agent,
             args=[task_data],
             timeout=2 * 3600,  # 2h max
             job_id=self.job_id,
         )
+        
 
         w = self.commit_new_worker(self.job, self.data)
         self.queue.connection.publish(channel='workers:events',

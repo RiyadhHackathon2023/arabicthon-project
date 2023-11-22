@@ -66,13 +66,14 @@ class Neo4jConnection:
         )
         self.query(add_query)
 
-    def add_word(self, worker_id, word, domain):
+    def add_word(self, worker_id, word, domain, task):
         add_query = """
-            MERGE (worker:Worker {{id: '{}', task:'definition', domain:'{}'}}) 
+            MERGE (worker:Worker {{id: '{}', task:'{}', domain:'{}'}}) 
             MERGE (word:Word {{content: '{}'}})
             CREATE (worker)-[:HAS_OUTPUT {{id: '{}', status: 'pending'}}]->(word) 
             """.format(
             worker_id,
+            task,
             domain,
             word,
             uuid.uuid1().hex,
@@ -92,6 +93,22 @@ class Neo4jConnection:
         output = [{
             "word": row['word'],
             "definition": row['definition'],
+            "status": row['status'],
+            "id_relation": row['rid'],
+        } for row in results]
+        return output, self.completion_rate(output)
+    
+    def get_words(self, worker_id):
+        get_definitions_query = f"""
+            MATCH (w:Worker {{id: '{worker_id}'}})-[r:HAS_OUTPUT]->(word:Word) 
+            RETURN DISTINCT w.id AS worker, word.content AS word, r.status AS status, r.id as rid
+        """
+        # get_definitions_query = f"MATCH (word:Word)<-[:HAS_INPUT]-(w:Worker {{id: '{worker_id}'}})-[r:HAS_OUTPUT]->(d:Definition) RETURN w.id AS worker, word.content AS word, d.content AS definition, r.status AS status, r.id as rid"
+        results = self.query(get_definitions_query)
+        if not results:
+            return [], self.completion_rate([])
+        output = [{
+            "word": row['word'],
             "status": row['status'],
             "id_relation": row['rid'],
         } for row in results]

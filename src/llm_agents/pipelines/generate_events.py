@@ -3,6 +3,7 @@ from src.llm_agents.sources.wikipedia import WikipediaSource
 from src.llm_agents.extractors.cohere_events_extractor import cohereEventsExtractor
 from src.neo4j_db.neo4j_connection import Neo4jConnection
 from src.llm_agents.classifiers.classify_definition import classify_definition
+from src.llm_agents.utils import keep_arabic
 
 
 def generate_events(worker_id="",
@@ -11,6 +12,7 @@ def generate_events(worker_id="",
                              "type": "",
                              "content": ""
                          }],
+                         task='his_events',
                          words=[]):
     for source in sources:
         print(source["type"])
@@ -37,7 +39,8 @@ def generate_events(worker_id="",
             extracted_text = extractor.extract(paragraph)
             for word in extracted_text:
                 if word not in ["", "لا شيء"]:
-                    conn.add_word(worker_id, word, domain)
+                    word = keep_arabic(word)
+                    conn.add_word(worker_id, word, domain, task)
                     print(word)
 
         conn.close()

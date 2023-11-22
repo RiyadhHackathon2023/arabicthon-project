@@ -1,7 +1,7 @@
 from redis import Redis
 from rq import Queue, Worker as RqWorker
 from .workers import Worker
-from ....db.models import WorkerModel, WorkerStatusEnum, WorkerSourceModel
+from ....db.models import WorkerModel, WorkerStatusEnum, WorkerSourceModel, SourceModel
 from ....db.session import get_session
 from ..utils.schedule import interval
 from ...requests.worker import WorkerData, RelationUpdateRequest
@@ -64,7 +64,7 @@ class WorkerManager(metaclass=SingletonMeta):
         self.queue = Queue(connection=self.redis_conn)
         self.rq_worker = RqWorker([self.queue],
                                   connection=self.redis_conn,
-                                  name=f'backend:{uuid.uuid1().hex[:10]}')
+                                  name=f'backend')
 
         self.rq_worker_status = WorkerManagerStatus.Stopped
         self.update_jobs_status()
@@ -325,6 +325,7 @@ class WorkerManager(metaclass=SingletonMeta):
             .filter(WorkerModel.worker_id == worker_id)\
             .first()
         wsources_db: List[WorkerSourceModel] = session.query(WorkerSourceModel).filter(WorkerSourceModel.worker_id == worker_id).all()
+        
         if worker_db:
             ## Fetch neo4j connection
             conn = get_neo4j_connection()
@@ -333,13 +334,19 @@ class WorkerManager(metaclass=SingletonMeta):
             if worker_db.task == str(WorkerTaskEnum.Definition):
                 outputs, rate = conn.get_definitions(
                     worker_id=worker_db.worker_id)
+            else:
+                outputs, rate = conn.get_words(
+                    worker_id=worker_db.worker_id)
+                
 
             result = worker_db.tojson()
             result['outputs'] = outputs
             result['completion'] = rate
-            result["source_ids"] = []
+            result["sources"] = []
+            
             if wsources_db:
-                result["source_ids"] = [ws_db.source_id for ws_db in wsources_db]
+                
+                result["sources"] = [session.query(SourceModel).filter(SourceModel.source_id == ws_db.source_id).first().tojson() for ws_db in wsources_db]
 
             return ServiceResponse(response_status='success',
                                    data=result,
@@ -364,15 +371,18 @@ class WorkerManager(metaclass=SingletonMeta):
                 if worker_db.task == str(WorkerTaskEnum.Definition):
                     outputs, rate = conn.get_definitions(
                         worker_id=worker_db.worker_id)
-                
+                else:
+                    outputs, rate = conn.get_words(
+                        worker_id=worker_db.worker_id)
 
                 result = worker_db.tojson()
                 result['outputs'] = outputs
                 result['completion'] = rate
-                result["source_ids"] = []
+                result["sources"] = []
                 wsources_db: List[WorkerSourceModel] = session.query(WorkerSourceModel).filter(WorkerSourceModel.worker_id == worker_db.worker_id).all()
                 if wsources_db:
-                    result["source_ids"] = [ws_db.source_id for ws_db in wsources_db]
+                    result["sources"] = [session.query(SourceModel).filter(SourceModel.source_id == ws_db.source_id).first().tojson() for ws_db in wsources_db]
+
                 data.append(result)
             session.close()
             return ServiceResponse(response_status='success',

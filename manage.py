@@ -54,7 +54,7 @@ def run():
         args=(app, ),
         kwargs={
             "host": "0.0.0.0",
-            "port": 3000,
+            "port": 8000,
             # "ssl_keyfile": "/home/azureuser/backend/key.pem",
             # "ssl_certfile": "/home/azureuser/backend/cert.pem",
             # "ssl_keyfile_password": ""

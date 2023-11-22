@@ -1,21 +1,19 @@
 from src.llm_agents.scrapers.playwright_sync import get_paragraphs
 from src.llm_agents.sources.wikipedia import WikipediaSource
-from src.llm_agents.extractors.cohere_places_extractor import coherePlacesExtractor
+from src.llm_agents.extractors.cohere_terms_extractor import cohereTermsExtractor
 from src.neo4j_db.neo4j_connection import Neo4jConnection
 from src.llm_agents.classifiers.classify_definition import classify_definition
 from src.llm_agents.utils import keep_arabic
 
 
-def generate_places(worker_id="",
+def generate_terms(worker_id="",
                          domain="",
                          sources=[{
                              "type": "",
                              "content": ""
                          }],
-                         task='places',
-                         words=[]
-                         
-                         ):
+                         task='key_terms',
+                         words=[]):
     for source in sources:
         print(source["type"])
         if source["type"] == "Url":
@@ -26,7 +24,7 @@ def generate_places(worker_id="",
         elif source["type"] == "File":
             input_paragraphs = source["content"]
 
-        extractor = coherePlacesExtractor()
+        extractor = cohereTermsExtractor()
 
         conn = Neo4jConnection(
             uri='neo4j+s://5e2c94ef.databases.neo4j.io',
