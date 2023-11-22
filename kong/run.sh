@@ -1,4 +1,4 @@
-docker run --name kong \
+docker run --restart=always -d --name kong \
     -e "KONG_DATABASE=off" \
     -e “KONG_PROXY_ACCESS_LOG=/dev/stdout” \
     -e “KONG_ADMIN_ACCESS_LOG=/dev/stdout” \

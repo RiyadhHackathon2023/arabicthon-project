@@ -18,6 +18,11 @@ class TaskData(BaseModel):
 
 class WorkerTaskEnum(enum.Enum):
     Definition = "definition"
+    Synonyms = "synonyms"
+    Antonyms = "antonyms"
+    HisEvents = "his_events"
+    KeyTerms = "key_terms"
+    
 
     def __str__(self):
         return str(self.value)

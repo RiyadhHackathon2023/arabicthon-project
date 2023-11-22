@@ -16,7 +16,7 @@ services:
         name: backend
         regex_priority: 0
         paths:
-          - /backend
+          - /
         protocols:
           - http
           - https
