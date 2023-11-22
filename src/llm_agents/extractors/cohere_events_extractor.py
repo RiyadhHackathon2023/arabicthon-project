@@ -7,3 +7,8 @@ class cohereEventsExtractor(cohereExtractor):
         self.examples = [e[1] for e in events_examples]
         self.example_labels = [e[0] for e in events_examples]
         self.example_prompt = "Extract in Arabic all the names of historical events from the text: "
+        self.NO_RESULT = "لا شيء"
+    
+    def extract(self, example):
+        extracted = super().extract(example)
+        return extracted.split(',')

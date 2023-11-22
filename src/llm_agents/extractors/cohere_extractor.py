@@ -1,5 +1,6 @@
 import cohere
 from src.llm_agents.constants import COHERE_API_KEY
+import time
 
 
 class cohereExtractor():
@@ -22,7 +23,11 @@ class cohereExtractor():
         ]))
 
     def extract(self, example):
-        extraction = self.co.generate(prompt=self.make_prompt(example),
-                                      temperature=0.1,
-                                      stop_sequences=["\n"])
-        return (extraction.generations[0].text)
+        while True:
+            try:
+                extraction = self.co.generate(prompt=self.make_prompt(example),
+                                            temperature=0.1,
+                                            stop_sequences=["\n"])
+                return (extraction.generations[0].text)
+            except cohere.error.CohereAPIError as e:
+                    time.sleep(2)
