@@ -66,6 +66,19 @@ class Neo4jConnection:
         )
         self.query(add_query)
 
+    def add_word(self, worker_id, word, domain):
+        add_query = """
+            MERGE (worker:Worker {{id: '{}', task:'definition', domain:'{}'}}) 
+            MERGE (word:Word {{content: '{}'}})
+            CREATE (worker)-[:HAS_OUTPUT {{id: '{}', status: 'pending'}}]->(word) 
+            """.format(
+            worker_id,
+            domain,
+            word,
+            uuid.uuid1().hex,
+        )
+        self.query(add_query)
+
     def get_definitions(self, worker_id):
         get_definitions_query = f"""
             MATCH (w:Worker {{id: '{worker_id}'}})-[r:HAS_OUTPUT]->(d:Definition) 
