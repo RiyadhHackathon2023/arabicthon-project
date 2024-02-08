@@ -1,6 +1,9 @@
 from neo4j import GraphDatabase
 import uuid
+import dotenv
+import os
 
+dotenv.load_dotenv()
 
 class Neo4jConnection:
     _instance = None
@@ -130,6 +133,6 @@ class Neo4jConnection:
 
 
 def get_neo4j_connection():
-    return Neo4jConnection(uri='neo4j+s://5e2c94ef.databases.neo4j.io',
-                           user='neo4j',
-                           pwd='E53hCDHJjVnO8aTLMejfxtmz1G7q9LplVVO6K5L6drg')
+    return Neo4jConnection(uri=os.getenv('NEO4J_URI'),
+                           user=os.getenv('NEO4J_USER'),
+                           pwd=os.getenv('NEO4J_URI'))

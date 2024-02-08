@@ -13,7 +13,7 @@ url = URL.create(
     database=os.getenv('POSTGRES_DB'),
     port=5432
 )
-
+print(url)
 def get_engine():
     engine = create_engine(url)
     return engine

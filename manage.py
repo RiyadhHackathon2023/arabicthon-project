@@ -20,14 +20,14 @@ def manager_cli():
 def create_db():
     from src.db import models
     from src.db import get_engine
-    max_retries = 3
+    max_retries = 10
     retry_count = 0
     while retry_count < max_retries:
         try:
             models.base_provider.Base.metadata.create_all(get_engine())
             return
-        except Exception:
-            print("Could not establish connection to db")
+        except Exception as e:
+            print("Could not establish connection to db", e)
             print("retrying ...")
             retry_count += 1
             time.sleep(2 * retry_count)

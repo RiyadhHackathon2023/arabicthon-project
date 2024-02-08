@@ -9,6 +9,8 @@ services:
     depends_on:
       - postgres
       - redis
+      - neo4j
+      - swift
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=backend
@@ -23,16 +25,20 @@ services:
       - CONTAINER=documents
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - NEO4J_USER=neo4j
+      - NEO4J_PASS=E53hCDHJjVnO8aTLMejfxtmz1G7q9LplVVO6K5L6drg
+      - NEO4J_URI=neo4j://neo4j:7687
+
 
   emitter:
     build:
       context: ./emitter
-      dockerfile: ./emitter/Dockerfile
+      dockerfile: ./Dockerfile
     container_name: emitter-app
     ports:
       - "8001:8001"
     depends_on:
-      - backend-app
+      - redis
     environment:
       - PORT=8001
       - REDIS_HOST=redis
@@ -49,6 +55,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - "./configs/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf"
 
   redis:
     image: redis:latest
@@ -62,6 +69,16 @@ services:
     restart: always
     ports:
       - "12345:8080"
+
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    restart: always
+    environment:
+      NEO4J_AUTH: neo4j/E53hCDHJjVnO8aTLMejfxtmz1G7q9LplVVO6K5L6drg
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
 
 volumes:
   postgres_data: {}
