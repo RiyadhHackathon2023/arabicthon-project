@@ -64,7 +64,7 @@ class WorkerManager(metaclass=SingletonMeta):
         self.queue = Queue(connection=self.redis_conn)
         self.rq_worker = RqWorker([self.queue],
                                   connection=self.redis_conn,
-                                  name=f'backend')
+                                  name=f'backend-{uuid.uuid5()}')
 
         self.rq_worker_status = WorkerManagerStatus.Stopped
         self.update_jobs_status()
@@ -72,7 +72,10 @@ class WorkerManager(metaclass=SingletonMeta):
     ## This function is called in fast api background task
     def start_rq_worker(self):
         if self.rq_worker_status != WorkerManagerStatus.Running:
-            self.rq_worker.work()
+            try:
+                self.rq_worker.work()
+            except Exception as e:
+                print(e)
             self.rq_worker_status = WorkerManagerStatus.Running
 
     async def spawn_worker(self, data: WorkerData):
