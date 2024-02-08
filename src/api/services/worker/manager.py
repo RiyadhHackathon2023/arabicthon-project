@@ -64,7 +64,7 @@ class WorkerManager(metaclass=SingletonMeta):
         self.queue = Queue(connection=self.redis_conn)
         self.rq_worker = RqWorker([self.queue],
                                   connection=self.redis_conn,
-                                  name=f'backend-{uuid.uuid5()}')
+                                  name=f'backend-{uuid.uuid4().hex}')
 
         self.rq_worker_status = WorkerManagerStatus.Stopped
         self.update_jobs_status()
