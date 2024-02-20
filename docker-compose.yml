@@ -52,9 +52,6 @@ services:
       POSTGRES_DB: "backend_db"
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - "./configs/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf"
 
   redis:
     image: redis:latest
