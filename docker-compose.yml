@@ -29,19 +29,6 @@ services:
       - NEO4J_PASS=E53hCDHJjVnO8aTLMejfxtmz1G7q9LplVVO6K5L6drg
       - NEO4J_URI=neo4j://neo4j:7687
 
-  emitter:
-    build:
-      context: ./backend/emitter
-      dockerfile: ./Dockerfile
-    container_name: emitter-app
-    ports:
-      - "8001:8001"
-    depends_on:
-      - redis
-    environment:
-      - PORT=8001
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
 
   postgres:
     image: postgres:latest
