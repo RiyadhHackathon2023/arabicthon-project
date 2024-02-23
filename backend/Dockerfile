@@ -10,6 +10,8 @@ RUN apt install make
 
 RUN pip install -r requirements.txt
 
+RUN playwright install
+
 RUN chmod +x ./entrypoint.sh
 
 EXPOSE 8000
