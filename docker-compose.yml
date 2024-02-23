@@ -41,7 +41,7 @@ services:
       - "5432:5432"
     command: ["postgres", "-c", "hba_file=/etc/pg_hba.conf"]
     volumes:
-      #- postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
       - "./backend/configs/pg_hba.conf:/etc/pg_hba.conf"
 
   redis:
