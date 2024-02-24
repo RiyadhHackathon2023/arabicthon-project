@@ -1,4 +1,4 @@
-To run this project in docker compose : 
+To run this project with docker compose : 
 
 ```
 git clone --recursive https://github.com/RiyadhHackathon2023/arabicthon-project.git
