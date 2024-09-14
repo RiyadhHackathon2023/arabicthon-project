@@ -2,25 +2,23 @@ import os
 import dotenv
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.requests import Request
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import BackgroundTasks
 from .requests.maintainer import CreateMaintainerRequest, UpdateMaintainerRequest
 from .requests.source import LoginRequest
 from .services.maintainers import *
 from .services.worker import Worker, WorkerManager
+from .requests.output import UpdateDefinitionRequest, UpdateWordRequest
 from .responses import make_response
-from .middlewares.auth import AuthMiddleware, verify_authorization_handler, auth_error_handler
 from .middlewares.contrib.auth import requires
-from .services.responses.service_response import ServiceResponse
-from fastapi import BackgroundTasks
 from ..db.models import SourceTypeEnum
 from .services.sources import *
 from typing import Union
 from .requests.worker import WorkerData, RelationUpdateRequest
+from .services.output import update_output_definition, update_output_word
 
-import time
 from contextlib import asynccontextmanager
-import multiprocessing
 
 dotenv.load_dotenv()
 
@@ -253,10 +251,21 @@ async def get_worker_by_id_handler(request: Request, worker_id: str):
     )
 
 
-@app.post('/output/{worker_id}')
+@app.put('/output/word')
 @requires([])
-async def update_worker_output(request: Request, worker_id: str):
-    response = await manager.get_workers_by_id(worker_id)
+async def update_output_word(request: Request,data: UpdateWordRequest):
+    response = await update_output_word(data.worker_id, data.relation_id)
+    return make_response(
+        status=response.response_status,
+        data=response.data,
+        code=response.http_code,
+        message=response.message,
+    )
+
+@app.put('/output/definition')
+@requires([])
+async def update_output_definition(request: Request, data: UpdateDefinitionRequest):
+    response = await update_output_definition(data.worker_id, data.relation_id)
     return make_response(
         status=response.response_status,
         data=response.data,

@@ -130,7 +130,35 @@ class Neo4jConnection:
             return 0
         return (1 - sum([d['status'] == 'pending'
                          for d in data]) / len(data)) * 100
+        
+        
+    # Edit a word created by a worker
+    def edit_word_by_worker(self, worker_id, has_output_id, new_word):
+        edit_word_query = f"""
+            MATCH (worker:Worker {{id: '{worker_id}'}})-[r:HAS_OUTPUT {{id: '{has_output_id}'}}]->(word:Word)
+            SET word.content = '{new_word}'
+            RETURN word
+        """
+        try:
+            self.query(edit_word_query)
+            return True
+        except Exception as e:
+            print(f"Failed to update word by worker {worker_id}: {e}")
+            return False
 
+    # Edit a definition created by a worker
+    def edit_definition_by_worker(self, worker_id, has_output_id, new_definition):
+        edit_definition_query = f"""
+            MATCH (worker:Worker {{id: '{worker_id}'}})-[r:HAS_OUTPUT {{id: '{has_output_id}'}}]->(definition:Definition)
+            SET definition.content = '{new_definition}'
+            RETURN definition
+        """
+        try:
+            self.query(edit_definition_query)
+            return True
+        except Exception as e:
+            print(f"Failed to update definition by worker {worker_id}: {e}")
+            return False
 
 def get_neo4j_connection():
     return Neo4jConnection(uri=os.getenv('NEO4J_URI'),
