@@ -3,7 +3,7 @@ psycopg2-binary
 bcrypt
 PyJWT
 click
-fastapi
+fastapi==0.109.2
 uvicorn
 python-dotenv
 python-multipart
@@ -12,10 +12,11 @@ rq
 alembic
 rq-dashboard
 python-multipart
-fastapi-socketio
+fastapi-socketio==0.0.10
 schedule
 python-swiftclient
-neo4j
-cohere
-langchain
+neo4j==5.17.0
+cohere==4.49
+langchain==0.1.9
 playwright
+langchain-community==0.0.24

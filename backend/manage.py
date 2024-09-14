@@ -55,9 +55,9 @@ def run():
         kwargs={
             "host": "0.0.0.0",
             "port": 8000,
-            "ssl_keyfile": "./key.pem",
-            "ssl_certfile": "./cert.pem",
-            "ssl_keyfile_password": ""
+            # "ssl_keyfile": "./key.pem",
+            # "ssl_certfile": "./cert.pem",
+            # "ssl_keyfile_password": ""
 
         })
     p2.start()
