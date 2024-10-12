@@ -1,5 +1,5 @@
 import cohere
-from src.llm_agents.extractors.examples.translation_examples import translations_examples
+from src.llm_agents.models.cohere.extractors.examples.translation_examples import translations_examples
 from src.llm_agents.constants import COHERE_API_KEY
 import time
 

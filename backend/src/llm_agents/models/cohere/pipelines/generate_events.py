@@ -1,6 +1,6 @@
 from src.llm_agents.scrapers.playwright_sync import get_paragraphs
 from src.llm_agents.sources.wikipedia import WikipediaSource
-from src.llm_agents.extractors.cohere_events_extractor import cohereEventsExtractor
+from src.llm_agents.models.cohere.extractors.cohere_events_extractor import cohereEventsExtractor
 from src.neo4j_db.neo4j_connection import Neo4jConnection
 from src.llm_agents.classifiers.classify_definition import classify_definition
 from src.llm_agents.utils import keep_arabic

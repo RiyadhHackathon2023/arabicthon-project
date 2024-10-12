@@ -1,5 +1,5 @@
-from src.llm_agents.extractors.examples.places_examples import places_examples
-from src.llm_agents.extractors.cohere_extractor import cohereExtractor
+from src.llm_agents.models.cohere.extractors.examples.places_examples import places_examples
+from src.llm_agents.models.cohere.extractors.cohere_extractor import cohereExtractor
 
 class coherePlacesExtractor(cohereExtractor):
     def __init__(self):

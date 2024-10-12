@@ -1,6 +1,6 @@
 import cohere
 from cohere.responses.classify import Example
-from src.llm_agents.translators.cohere_translator import CohereTranslator
+from src.llm_agents.models.cohere.translators.cohere_translator import CohereTranslator
 from src.llm_agents.constants import COHERE_API_KEY
 
 import time

@@ -1,5 +1,5 @@
-from src.llm_agents.extractors.examples.events_examples import events_examples
-from src.llm_agents.extractors.cohere_extractor import cohereExtractor
+from src.llm_agents.models.cohere.extractors.examples.events_examples import events_examples
+from src.llm_agents.models.cohere.extractors.cohere_extractor import cohereExtractor
 
 class cohereEventsExtractor(cohereExtractor):
     def __init__(self):

@@ -1,9 +1,8 @@
-import time
-from src.api.services.worker.types import TaskData, Source, WorkerTaskEnum
-from src.llm_agents.pipelines.generate_definitions import generate_definitions
-from src.llm_agents.pipelines.generate_events import generate_events
-from src.llm_agents.pipelines.generate_places import generate_places
-from src.llm_agents.pipelines.generate_terms import generate_terms
+from src.api.services.worker.types import TaskData, WorkerTaskEnum
+from src.llm_agents.models.cohere.pipelines.generate_definitions import generate_definitions
+from src.llm_agents.models.cohere.pipelines.generate_events import generate_events
+from src.llm_agents.models.cohere.pipelines.generate_places import generate_places
+from src.llm_agents.models.cohere.pipelines.generate_terms import generate_terms
 
 
 

@@ -1,16 +1,18 @@
 from src.llm_agents.scrapers.playwright_sync import get_paragraphs
 from src.llm_agents.sources.wikipedia import WikipediaSource
-from src.llm_agents.extractors.cohere_definition_extractor import cohereDefinitionExtractor
+from src.llm_agents.models.cohere.extractors.cohere_terms_extractor import cohereTermsExtractor
 from src.neo4j_db.neo4j_connection import Neo4jConnection
 from src.llm_agents.classifiers.classify_definition import classify_definition
+from src.llm_agents.utils import keep_arabic
 
 
-def generate_definitions(worker_id="",
+def generate_terms(worker_id="",
                          domain="",
                          sources=[{
                              "type": "",
                              "content": ""
                          }],
+                         task='key_terms',
                          words=[]):
     for source in sources:
         print(source["type"])
@@ -22,7 +24,7 @@ def generate_definitions(worker_id="",
         elif source["type"] == "File":
             input_paragraphs = source["content"]
 
-        extractor = cohereDefinitionExtractor()
+        extractor = cohereTermsExtractor()
 
         conn = Neo4jConnection(
             uri='neo4j+s://5e2c94ef.databases.neo4j.io',
@@ -31,17 +33,15 @@ def generate_definitions(worker_id="",
         print('Scraping...')
         for paragraph in input_paragraphs:
             print("\nPARAGRAPH", paragraph)
-            for word in words:
-                if word in paragraph:
-                    print("\nWORD", word)
-                    paragraph = paragraph.replace('\'', '')
-                    paragraph = paragraph.replace('\"', '')
-                    print("REPLACED", paragraph)
-                    if classify_definition(paragraph):
-                        print("\nDEF FOUND")
-                        extracted_text = extractor.extract(paragraph, word)
-                        conn.add_definition(worker_id, word, extracted_text,
-                                            domain)
+            paragraph = paragraph.replace('\'', '')
+            paragraph = paragraph.replace('\"', '')
+            print("REPLACED", paragraph)
+            extracted_text = extractor.extract(paragraph)
+            for word in extracted_text:
+                if word not in ["", "لا شيء"]:
+                    word = keep_arabic(word)
+                    conn.add_word(worker_id, word, domain, task)
+                    print(word)
 
         conn.close()
     return "OK"
