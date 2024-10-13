@@ -14,6 +14,7 @@ class TaskData(BaseModel):
     input_words: str  # comma-separated words
     task: str  ## tasks : words, definition, synonyms, antonyms, examples, historical_events, historical_figures.
     sources: List[Source]  ## Change it to List[Source]
+    llm: str
 
 
 class WorkerTaskEnum(enum.Enum):
