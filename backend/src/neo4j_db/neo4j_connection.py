@@ -18,6 +18,7 @@ class Neo4jConnection:
         self.__user = user
         self.__pwd = pwd
         self.__driver = None
+        print(self.__uri, self.__user, self.__pwd)
         try:
             self.__driver = GraphDatabase.driver(self.__uri,
                                                  auth=(self.__user,
@@ -135,4 +136,4 @@ class Neo4jConnection:
 def get_neo4j_connection():
     return Neo4jConnection(uri=os.getenv('NEO4J_URI'),
                            user=os.getenv('NEO4J_USER'),
-                           pwd=os.getenv('NEO4J_URI'))
+                           pwd=os.getenv('NEO4J_PASS'))

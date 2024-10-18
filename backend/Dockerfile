@@ -12,6 +12,8 @@ RUN pip install -r requirements.txt
 
 RUN playwright install
 
+RUN playwright install-deps
+
 RUN chmod +x ./entrypoint.sh
 
 EXPOSE 8000
