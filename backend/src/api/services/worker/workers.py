@@ -111,7 +111,9 @@ class Worker:
                 id_worker=self.job_id,
                 input_words=data.input_words,
                 sources=[self.get_source(source) for source in sources_db],
-                task=data.task)
+                task=data.task,
+                llm=data.llm
+            )
 
             session.close()
             return task_data

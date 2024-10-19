@@ -4,6 +4,7 @@ from src.llm_agents.extractors.cohere_events_extractor import cohereEventsExtrac
 from src.neo4j_db.neo4j_connection import Neo4jConnection
 from src.llm_agents.classifiers.classify_definition import classify_definition
 from src.llm_agents.utils import keep_arabic
+from src.neo4j_db.neo4j_connection import get_neo4j_connection
 
 
 def generate_events(worker_id="",
@@ -26,10 +27,7 @@ def generate_events(worker_id="",
 
         extractor = cohereEventsExtractor()
 
-        conn = Neo4jConnection(
-            uri='neo4j+s://5e2c94ef.databases.neo4j.io',
-            user='neo4j',
-            pwd='E53hCDHJjVnO8aTLMejfxtmz1G7q9LplVVO6K5L6drg')
+        conn = get_neo4j_connection()
         print('Scraping...')
         for paragraph in input_paragraphs:
             print("\nPARAGRAPH", paragraph)

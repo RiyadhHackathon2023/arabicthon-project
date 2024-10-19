@@ -1,4 +1,4 @@
-FROM python:latest
+FROM python:3.9.20-bookworm
 
 WORKDIR /app
 
@@ -11,6 +11,8 @@ RUN apt install make
 RUN pip install -r requirements.txt
 
 RUN playwright install
+
+RUN playwright install-deps 
 
 RUN chmod +x ./entrypoint.sh
 
