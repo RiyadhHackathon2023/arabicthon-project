@@ -5,10 +5,10 @@ from src.llm_agents.pipelines.generate_events import generate_events
 from src.llm_agents.pipelines.generate_places import generate_places
 from src.llm_agents.pipelines.generate_terms import generate_terms
 
+def run_agent_gpt4(data: TaskData):
+    pass # Code that executes GTP4 model
 
-
-
-def run_agent(data: TaskData):
+def run_agent_cohere(data: TaskData):
     if data.task == str(WorkerTaskEnum.Definition):
         print("Running agent with task 3: ", data.task)
         return generate_definitions(
@@ -56,3 +56,10 @@ def run_agent(data: TaskData):
             task=data.task,
         )
     return 'OK'
+
+def run_agent(data: TaskData):
+    if data.llm == "Cohere":
+        return run_agent_cohere(data)
+    
+    if data.llm == "GPT-4":
+        return run_agent_gpt4(data)
